@@ -10,7 +10,7 @@ class actions:
     async def jump(self, websocket: WebSocket, sender: SimpleUDPClient):
         await websocket.send_json({"res" : "Jumping"})
         sender.send_message("/input/Jump", 1)
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(2)
         sender.send_message("/input/Jump", 0)
         self.log.success("Sent jump data")
 

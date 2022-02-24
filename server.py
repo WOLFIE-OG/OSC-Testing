@@ -13,6 +13,7 @@ action = actions(log)
 @app.websocket("/ws")
 async def websock(websocket: WebSocket):
     await websocket.accept()
+    await websocket.send_text("WELCOME TO SOME SHITTY THING I MADE, PLEASE DONT BREAK MY SHIT")
     while True:
         _ = await websocket.receive_json()
         for act in _['array']:
@@ -37,7 +38,5 @@ async def websock(websocket: WebSocket):
             elif act['action'] == "vc_off":
                 await action.vc_off(websocket, sender)
             elif act['action'] == "prmt":
-                await action.prmt(websocket, sender, act)
- 
-        
+                await action.prmt(websocket, sender, act)     
 uvicorn.run(app)
