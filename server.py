@@ -2,16 +2,25 @@ from pythonosc.udp_client import SimpleUDPClient
 from fastapi.websockets import WebSocket
 from fastapi import FastAPI
 from libs.logger import Logger
-from libs.actions import actions
-from libs.tasks import tasks
-import uvicorn, asyncio
+from libs.actions import Actions
+from libs.tasks import Tasks, RunningTask
+from libs.osc_server import OSCServer
+import asyncio
+from uvicorn import Config, Server
+from asyncio import ProactorEventLoop, set_event_loop, ProactorEventLoop, get_event_loop
+
 
 app = FastAPI()
 sender = SimpleUDPClient("127.0.0.1", 9000)
 log = Logger()
-action = actions(log)
-task = tasks(log)
+action = Actions(log)
+task = Tasks(log)
+oscsrv = OSCServer()
 
+@app.on_event("startup")
+async def osc_server():
+    asyncio.create_task(oscsrv.start())
+    
 @app.websocket("/ws")
 async def websock(websocket: WebSocket):
     await websocket.accept()
@@ -35,12 +44,30 @@ async def websock(websocket: WebSocket):
                 await action.lk_l(websocket, sender, act)
             elif act['action'] == "lk_r":
                 await action.lk_r(websocket, sender, act)
+            elif act['action'] == "lk_uw":
+                await action.lk_uw(websocket, sender, act)
+            elif act['action'] == "lk_dw":
+                await action.lk_dw(websocket, sender, act)
             elif act['action'] == "vc_on":
                 await action.vc_on(websocket, sender)
             elif act['action'] == "vc_off":
                 await action.vc_off(websocket, sender)
             elif act['action'] == "prmt":
                 await action.prmt(websocket, sender, act)
-            elif act['action'] == "cpu2param":
-                asyncio.create_task(task.cpu2parameter(websocket, sender, act['parameter']))
-uvicorn.run(app)
+            elif act['action'] == "cpu2param_start":
+                t = RunningTask()
+                t.task_object = await asyncio.create_task(await task.cpu2parameter(websocket, sender, act['parameter']))
+                t.websocket = websocket
+                await websocket.send_json({"res" : t.id})
+
+
+if __name__ == "__main__":
+    set_event_loop(ProactorEventLoop())
+    server = Server(
+        config=Config(
+            app = app, 
+            host = "localhost",
+            port = 8000
+        )
+    )
+    get_event_loop().run_until_complete(server.serve())

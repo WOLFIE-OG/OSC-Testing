@@ -3,7 +3,7 @@ from pythonosc.udp_client import SimpleUDPClient
 from fastapi.websockets import WebSocket
 from libs.logger import Logger
 
-class actions:
+class Actions:
     def __init__(self, log: Logger):
         self.log = log
     
@@ -64,6 +64,20 @@ class actions:
         await asyncio.sleep(act['length'])
         sender.send_message("/input/LookRight", 0)
         self.log.success("Sent look right data")
+    
+    async def lk_uw(self, websocket: WebSocket, sender: SimpleUDPClient, act: dict):
+        await websocket.send_json({"res" : "Looking Upward"})
+        sender.send_message("/input/LookUp", 1)
+        await asyncio.sleep(act['length'])
+        sender.send_message("/input/LookUp", 0)
+        self.log.success("Sent look upward data")
+    
+    async def lk_dw(self, websocket: WebSocket, sender: SimpleUDPClient, act: dict):
+        await websocket.send_json({"res" : "Looking Downward"})
+        sender.send_message("/input/LookDown", 1)
+        await asyncio.sleep(act['length'])
+        sender.send_message("/input/LookDown", 0)
+        self.log.success("Sent look downward data")
     
     async def vc_on(self, websocket: WebSocket, sender: SimpleUDPClient):
         await websocket.send_json({"res" : "Turning voice on"})
