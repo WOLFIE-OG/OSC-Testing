@@ -3,12 +3,14 @@ from fastapi.websockets import WebSocket
 from fastapi import FastAPI
 from libs.logger import Logger
 from libs.actions import actions
+from libs.tasks import tasks
 import uvicorn, asyncio
 
 app = FastAPI()
 sender = SimpleUDPClient("127.0.0.1", 9000)
 log = Logger()
 action = actions(log)
+task = tasks(log)
 
 @app.websocket("/ws")
 async def websock(websocket: WebSocket):
@@ -38,5 +40,7 @@ async def websock(websocket: WebSocket):
             elif act['action'] == "vc_off":
                 await action.vc_off(websocket, sender)
             elif act['action'] == "prmt":
-                await action.prmt(websocket, sender, act)     
+                await action.prmt(websocket, sender, act)
+            elif act['action'] == "cpu2param":
+                asyncio.create_task(task.cpu2parameter(websocket, sender, act['parameter']))
 uvicorn.run(app)
