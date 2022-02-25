@@ -16,11 +16,11 @@ class Tasks:
         self.sender = SimpleUDPClient("127.0.0.1", 9000)
 
     async def system2parameter(self, websocket: WebSocket):
-        gpu_l = GPUtil.getGPUs()
         while True:
-            cpu = psutil.cpu_percent()
-            ram = psutil.virtual_memory().percent
-            gpu = gpu_l[0].load*100
+            cpu = psutil.cpu_percent() / 100
+            ram = psutil.virtual_memory().percent / 100
+            gpu_l = GPUtil.getGPUs()
+            gpu = gpu_l[0].load*100 / 100
             self.log.info(f"CPU: {cpu} | RAM: {ram} | GPU: {gpu}")
             self.sender.send_message(
                 address = f"/avatar/parameters/CPUF",
