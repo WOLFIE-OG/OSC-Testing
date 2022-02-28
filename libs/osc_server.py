@@ -6,12 +6,12 @@ def vrc_emote_handler(address, *args):
     print(f"{address}: {args}")
 
 class OSCServer:
-
-    def __init__(self, log: Logger):
+    def __init__(self, log: Logger, host: str, port: int):
         self.log = log
         self.is_open = False
         self.dispatcher = Dispatcher()
         self.dispatcher.map("/avatar/parameters/VRCEmote", vrc_emote_handler)
+        self.server = AsyncIOOSCUDPServer((host, port), self.dispatcher, asyncio.get_event_loop())
         self.log.success("OSCServer Class Initialised")
     
     async def loop(self):
@@ -21,8 +21,7 @@ class OSCServer:
         self.stop()
 
     async def start(self):
-        srv = AsyncIOOSCUDPServer(("127.0.0.1", 9001), self.dispatcher, asyncio.get_event_loop())
-        self.transpt, prtc = await srv.create_serve_endpoint()
+        self.transpt, prtc = await self.server.create_serve_endpoint()
         self.is_open = True
         await self.loop()
     

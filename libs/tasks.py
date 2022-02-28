@@ -20,7 +20,7 @@ class Tasks:
             cpu = psutil.cpu_percent() / 100
             ram = psutil.virtual_memory().percent / 100
             gpu_l = GPUtil.getGPUs()
-            gpu = gpu_l[0].load*100 / 100
+            gpu = gpu_l[0].load*100 / 100 if len(gpu_l) != 0 else 0.0
             self.log.info(f"CPU: {cpu} | RAM: {ram} | GPU: {gpu}")
             self.sender.send_message(
                 address = f"/avatar/parameters/CPUF",
