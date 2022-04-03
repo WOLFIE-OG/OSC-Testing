@@ -13,7 +13,7 @@ app = FastAPI()
 log = Logger()
 action = Actions(
     log = log,
-    host = "192.168.1.13",
+    host = "localhost",
     port = 9000
 )
 oscsrv = OSCServer(
